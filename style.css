@@ -1,0 +1,51 @@
+h1{
+    color: #626262;
+}
+
+.row {
+    margin-top: 30px;
+}
+
+#generate {
+    margin-bottom: 30px;
+}
+
+.button {
+    background-color: #8a100b;
+    transition-duration: .2s;
+}
+.button:hover {
+    background-color: #b29d6c;
+    border-color: #b29d6c;
+}
+
+a {
+    transition-duration: .2s;
+}
+a:hover {
+    color: #b29d6c
+}
+
+div p {
+    padding: .5em;
+    margin-bottom: 20px;
+    background-color: #f6f6f6;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    border-color: #e4e4e4;
+    animation: fadeIn;
+    animation-duration: .2s;
+}
+
+#rightCol p {    /* to get rid of properties on p in right column caused by above descedant selector */
+    padding: 0px;
+    background-color: #ffffff;
+    border-style: none;
+    animation-duration: 0s;
+}
+
+img {
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
