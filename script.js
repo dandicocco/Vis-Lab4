@@ -53,7 +53,8 @@ d3.csv('wealth-health-2014.csv', d3.autoType).then(data=>{
 //    console.log(aScale(1369435670));
 
 
-    
+    legendColors = d3.scaleOrdinal(d3.schemeTableau10) // colors for circles
+
     //create datapoints
     svg.selectAll("circle")
         .data(wealthHealth)
@@ -70,8 +71,35 @@ d3.csv('wealth-health-2014.csv', d3.autoType).then(data=>{
         })
         .attr("stroke-width", 0.5)
         .attr("stroke", "black")
-        .attr("fill", "#4695eb")
-        .attr("fill-opacity", 0.5);
+        .attr("fill", function(d){
+            return legendColors(d.Region);
+        })
+        .attr("fill-opacity", 0.5)
+        .on("mouseenter", (event, d) => {
+            // show the tooltip
+            const pos = d3.pointer(event, window);
+
+            
+
+            d3.select("#tooltip")
+                .style("left", pos[0]-50+"px")
+                .style("top", pos[1]-20+"px")
+               // .select("#value")
+                .html("<p>Country: " + d.Country + "<br/>" +
+                    "Region: " + d.Region + "<br/>" +
+                    "Population: " + d3.format("(,.3r")(d.Population) + "<br/>" +
+                    "Income: " + d3.format("($,.0f")(d.Income) + "<br/>" +
+                    "Life Expectancy: " + d.LifeExpectancy + "</p>"
+                )
+
+            d3.select("#tooltip").classed("hidden", false);
+            
+
+        })
+        .on("mouseleave", (event, d) => {
+            // hide the tooltip
+            d3.select("#tooltip").classed("hidden", true);
+        });
 
     // create axes
     const xAxis = d3.axisBottom()
@@ -109,44 +137,22 @@ d3.csv('wealth-health-2014.csv', d3.autoType).then(data=>{
 		.text("Life Expectancy")
 
 
-        legendColors = d3.scaleOrdinal(d3.schemeTableau10)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //create labels
-    svg.selectAll("text")
-        .data(wealthHealth)
+    //create legend
+    svg.selectAll(".legendSquares")
+        .data(legendColors.domain())
         .enter()
-        .append("text")
-        .text(function(d){
-            return d.country
+        .append("rect")
+        .attr("class", "legendSquares")
+        .attr("x", 450)
+        .attr("y", function(d,i){
+            return 300 + 15*i;
         })
-        .attr("x", function(d){
-            return d.x;
-        })
-        .attr("y", function(d){
-            return d.y-12;
-        })
-        .attr("text-anchor", "middle")
-        .attr("font-size", 11)
-        .attr("opacity", function(d){
-            if (d.population < 1000000){
-                return 0;
-            } else {
-                return 1;
-            }
-        })
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("fill", function(d){
+            return d[i];
+        });
+
         
 
 })
