@@ -4,33 +4,125 @@ d3.csv('wealth-health-2014.csv', d3.autoType).then(data=>{
 
     wealthHealth = data;
     console.log('data', wealthHealth);
-
-    d3.select('.city-count').text(function() {
-        return "Number of Cities: " + wealthHealth.length}); //display Number of Cities
-
+    
     //construct svg element
-    const w = 700;
-    const h = 550;
-    const svg = d3.select('.population-plot')
-                    .append('svg')
-                    .attr('width', w)
-                    .attr('height', h)
+    const margin = ({top: 40, right: 40, bottom: 40, left: 40});
+
+    const w = 650 - margin.left - margin.right,
+    h = 500 - margin.top - margin.bottom;
+
+    let incomeDomain = d3.extent(wealthHealth, function(d) {
+        return d.Income;
+    });
+  //  console.log(incomeDomain[0]);
+    let lifeExpecDomain = d3.extent(wealthHealth, function(d) {
+        return d.LifeExpectancy;
+    });
+  //  console.log(lifeExpecDomain[0]);
+
+
+  const svg = d3.select(".chart")
+                    .append("svg")
+                    .attr("width", w + margin.left + margin.right)
+                    .attr("height", h + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    
+    const xScale = d3.scaleLinear()
+                        .domain(d3.extent(wealthHealth, function(d) {
+                            return d.Income;
+                        }))
+                        .range([0, w]);
+
+    console.log(xScale(incomeDomain[1]));
+
+    const yScale = d3.scaleLinear()
+                        .domain(d3.extent(wealthHealth, function(d) {
+                            return d.LifeExpectancy;
+                        }))
+                        .range([h, 0]);  //reversed because of SVG
+
+
+    let radiusDomain = d3.extent(wealthHealth, function(d) {
+        return d.Population;
+    })
+
+    let aScale = d3.scaleSqrt()  //area Scale
+                    .domain([0, radiusDomain[1]])
+                    .range([4,25]);
+//    console.log(aScale(1369435670));
+
+
     
     //create datapoints
     svg.selectAll("circle")
         .data(wealthHealth)
         .enter()
         .append("circle")
-        .attr('cx', (d, i) => d.x)
-        .attr('cy', (d) => d.y)
-        .attr('r', function(d){
-            if (d.population < 1000000){
-                return 4;
-            } else {
-                return 8;
-            }
+        .attr('cx', function(d){
+            return xScale(d.Income);
         })
-        .attr("fill", "#4695eb");
+        .attr('cy', function(d){
+            return yScale(d.LifeExpectancy);
+        })
+        .attr('r', function(d){
+            return aScale(d.Population);
+        })
+        .attr("stroke-width", 0.5)
+        .attr("stroke", "black")
+        .attr("fill", "#4695eb")
+        .attr("fill-opacity", 0.5);
+
+    // create axes
+    const xAxis = d3.axisBottom()
+                    .scale(xScale)
+                    .ticks(5, "s")
+
+    const yAxis = d3.axisLeft()
+                    .scale(yScale)
+
+    // Draw the axes
+    svg.append("g")
+        .attr("class", "axis x-axis")
+        .attr("transform", `translate(0, ${h})`)
+        .call(xAxis);
+
+    svg.append("g")
+        .attr("class", "axis y-axis")
+ //       .attr("transform", `translate(0, ${h+margin.top/2})`)
+        .call(yAxis);
+
+    //axes labels
+    svg.append("text")
+        .attr("class", "axis")
+		.attr('x', 500)
+        .attr('y', h-5)
+		// add attrs such as alignment-baseline and text-anchor as necessary
+        .text("Income");
+        
+    svg.append("text")
+        .attr("class", "axis")
+		.attr('x', 10)
+        .attr('y', 0)
+        .attr("writing-mode", "vertical-lr")
+		// add attrs such as alignment-baseline and text-anchor as necessary
+		.text("Life Expectancy")
+
+
+        legendColors = d3.scaleOrdinal(d3.schemeTableau10)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     //create labels
     svg.selectAll("text")
@@ -58,97 +150,4 @@ d3.csv('wealth-health-2014.csv', d3.autoType).then(data=>{
         
 
 })
-
-let buildingData;
-
-d3.csv('buildings.csv', d3.autoType).then(bData => {
-		buildingData = bData;
-        buildingData.sort((a, b) => b.height_ft - a.height_ft);  //sort desc
-
-        console.log('Buildings', buildingData);
-
-        //construct second SVG element
-        const w = 500;
-        const h = 500;
-        let barPadding =10;
-        const svg = d3.select('.building-plot')
-                        .append('svg')
-                        .attr('width', w)
-                        .attr('height', h)
-
-        //create bars
-        svg.selectAll(".bar")
-            .data(buildingData)
-            .enter()
-            .append("rect")
-            .attr("class", "bar")
-            .attr("x", 200)
-            .attr("y", function(d,i){
-                return i * (h / buildingData.length)
-            })
-            .attr("width", function(d){
-                return d.height_px;
-            })
-            .attr("height", h / buildingData.length - barPadding)
-            .attr("fill", "#f29c38")
-            .on("click", function(e, d){
-                //change the image
-                document.querySelector(".image").src = "img/"+d.image;
-                //change building stats
-                Height = d3.select(".height");
-                Height.text(d.height_ft);
-                City = d3.select(".city");
-                City.text(d.city);
-                Country = d3.select(".country");
-                Country.text(d.country);
-                Floors = d3.select(".floors");
-                Floors.text(d.floors);
-                Completed = d3.select(".completed");
-                Completed.text(d.completed);
-
-            });
-    
-        //add building names
-        svg.selectAll("text.labels")
-            .data(buildingData)
-            .enter()
-            .append("text")
-            .attr("class", "labels")
-            .text(function(d){
-                return d.building;
-            })
-            .attr("x", 0)
-            .attr("y", function(d,i){
-                // the + 1 at the end is an aesthetic adjustment, alignment baseline though middle is not true middle
-                return (i * (h / buildingData.length) + (h / buildingData.length - barPadding) / 2) + 1;
-            })
-            .attr("alignment-baseline", "middle")
-            .attr("font-size", 13)
-            .attr("font-weight", "bolder");
-
-        //add building sizes
-        svg.selectAll("text.sizes")
-            .data(buildingData)
-            .enter()
-            .append("text")
-            .attr("class", "sizes")
-            .text(function(d){
-                return d.height_ft + " ft";
-            })
-            .attr("x", function(d){
-                return 150 + d.height_px;
-            })
-            .attr("y", function(d,i){
-                // the + 1 at the end is an aesthetic adjustment, alignment baseline though middle is not true middle
-                return (i * (h / buildingData.length) + (h / buildingData.length - barPadding) / 2) + 1;
-            })
-            .attr("alignment-baseline", "middle")
-            .attr("font-size", 13)
-            .attr("fill", "white");
-
-
-
-
-    })
-
 
