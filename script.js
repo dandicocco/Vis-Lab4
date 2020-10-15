@@ -2,7 +2,10 @@ let wealthHealth;
 
 d3.csv('wealth-health-2014.csv', d3.autoType).then(data=>{ 
 
+
     wealthHealth = data;
+    wealthHealth.sort((a, b) => b.Population - a.Population);     //sort data desc. by population so smaller countries circles go on top
+
     console.log('data', wealthHealth);
     
     //construct svg element
@@ -49,7 +52,7 @@ d3.csv('wealth-health-2014.csv', d3.autoType).then(data=>{
 
     let aScale = d3.scaleSqrt()  //area Scale
                     .domain([0, radiusDomain[1]])
-                    .range([4,25]);
+                    .range([3,24]);
 //    console.log(aScale(1369435670));
 
 
@@ -74,7 +77,7 @@ d3.csv('wealth-health-2014.csv', d3.autoType).then(data=>{
         .attr("fill", function(d){
             return legendColors(d.Region);
         })
-        .attr("fill-opacity", 0.5)
+        .attr("fill-opacity", 0.6)
         .on("mouseenter", (event, d) => {
             // show the tooltip
             const pos = d3.pointer(event, window);
@@ -143,15 +146,31 @@ d3.csv('wealth-health-2014.csv', d3.autoType).then(data=>{
         .enter()
         .append("rect")
         .attr("class", "legendSquares")
+        .attr("x", 430)
+        .attr("y", function(d,i){
+            return 270 + 17*i;
+        })
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("fill", function(d){
+            return legendColors(d);
+        });
+
+
+        //create legend labels
+    svg.selectAll(".legendLabels")
+        .data(legendColors.domain())
+        .enter()
+        .append("text")
+        .attr("class", "legendLabels")
         .attr("x", 450)
         .attr("y", function(d,i){
-            return 300 + 15*i;
+            return 272 + 17.25*i;
         })
-        .attr("width", 10)
-        .attr("height", 10)
-        .attr("fill", function(d){
-            return d[i];
-        });
+        .text(function(d){
+            return d;
+        })
+        .attr("alignment-baseline", "hanging");
 
         
 

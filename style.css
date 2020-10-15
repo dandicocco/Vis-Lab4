@@ -37,3 +37,11 @@
     line-height: 20px;
     color: white;
 }
+
+.legendLabels {
+    font-size: smaller;
+}
+
+.axis {
+    font-size: 10px;
+}
